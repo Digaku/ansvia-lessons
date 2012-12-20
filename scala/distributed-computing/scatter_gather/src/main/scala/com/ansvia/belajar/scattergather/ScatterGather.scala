@@ -68,11 +68,11 @@ object ScatterGather {
         val recipients = (1 to 5) map(i => system.actorOf(Props(new Recipient(i))))
         val agregator = system.actorOf(Props(new Agregator(recipients, system)))
 
-        Await.result(agregator ? Message("Hello"), timeout.duration).asInstanceOf[Promise[String]] map { rv1 =>
-            println("rv1: " + rv1)
+        Await.result(agregator ? Message("Hello"), timeout.duration).asInstanceOf[Promise[String]] map { rv =>
+            println("result 1: " + rv)
         }
-        Await.result(agregator ? Message("Robin"), timeout.duration).asInstanceOf[Promise[String]] map { rv2 =>
-            println("rv2: " + rv2)
+        Await.result(agregator ? Message("Robin"), timeout.duration).asInstanceOf[Promise[String]] map { rv =>
+            println("result 2: " + rv)
         }
 
         recipients foreach(_ ! PoisonPill)
