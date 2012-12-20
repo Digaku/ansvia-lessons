@@ -1,0 +1,32 @@
+organization := "com.ansvia.belajar.lucene.zoie"
+
+name := "ZoieExample"
+
+version := "0.0.1"
+
+scalaVersion := "2.9.1"
+
+scalacOptions := Seq("-unchecked", "-deprecation")
+
+resolvers ++= Seq(
+	"Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+	"Ansvia repo" at "http://scala.repo.ansvia.com/releases/"
+)
+
+ivyXML :=
+  <dependencies>
+    <!--<exclude module="log4j" />-->
+    <exclude module="slf4j-log4j12" />
+  </dependencies>
+
+
+
+libraryDependencies ++= Seq(
+	"ch.qos.logback" % "logback-classic" % "1.0.7",
+	"ch.qos.logback" % "logback-core" % "1.0.7",
+	"org.slf4j" % "slf4j-api" % "1.6.6",
+	"com.ansvia" % "ansvia-commons" % "0.0.2",
+	"com.linkedin.zoie" % "zoie-core" % "3.3.0"
+)
+
+
