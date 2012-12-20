@@ -4,7 +4,7 @@ Scatter Gather
 Ini adalah contoh implementasi pattern Scatter-Gather yang biasanya digunakan dalam distributed computing.
 
 
-[Scatter Gather](http://www.eaipatterns.com/img/BroadcastAggregate.gif)
+![Scatter Gather](http://www.eaipatterns.com/img/BroadcastAggregate.gif)
 
 
 Sampel output
