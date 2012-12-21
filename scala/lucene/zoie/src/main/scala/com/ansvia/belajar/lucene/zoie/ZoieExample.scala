@@ -136,7 +136,7 @@ object ZoieExample {
 
             val readerInfo = subReaderAccessor.getSubReaderInfo(docid)
 
-            val uid = readerInfo.subreader.asInstanceOf[Fir].getInnerReader.asInstanceOf[ZoieIndexReader[Fir]].getUID(docid)
+            val uid = readerInfo.subreader.getInnerReader.asInstanceOf[ZoieIndexReader[Fir]].getUID(docid)
 
             println("got uid: " + uid)
           }
