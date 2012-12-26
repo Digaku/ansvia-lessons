@@ -23,5 +23,6 @@ libraryDependencies ++= Seq(
 	"org.slf4j" % "slf4j-api" % "1.6.6",
 	"com.ansvia" % "ansvia-commons" % "0.0.2",
 	"org.anormcypher" %% "anormcypher" % "0.2.1"
+//	"org.springframework.data" % "spring-data-neo4j" % "2.0.1.RELEASE"
     )
 
