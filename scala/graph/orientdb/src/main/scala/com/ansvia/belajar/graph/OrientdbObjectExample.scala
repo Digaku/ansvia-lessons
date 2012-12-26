@@ -2,64 +2,49 @@ package com.ansvia.belajar.graph
 
 import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
-import models.User
+import models.{DigakuModel, User}
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.orientechnologies.orient.core.db.`object`.ODatabaseObject
 import com.orientechnologies.orient.`object`.db.OObjectDatabaseTx
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 object OrientdbObjectExample {
 
+    import com.ansvia.perf.Perf.timing
+    import Implicits._
 
-    implicit def dbWrapper(db: OObjectDatabaseTx) = new {
-        def queryBySql[T](sql: String, params: AnyRef*): List[T] = {
-            val params4java = params.toArray
-            val results: java.util.List[T] = db.query(new OSQLSynchQuery[T](sql), params4java: _*)
-            for ( rv <- results.asScala.toList )
-            yield {
-                db.detach(rv)
-                rv
-            }
-        }
-    }
-
-    def timing(title:String = "title")(f: => Unit){
-        println(title + ":")
-
-        val start = System.currentTimeMillis()
-
-        f
-
-        val totalTime = System.currentTimeMillis() - start
-        println(title + " - done in " + totalTime + "ms")
-    }
 
     def main(args:Array[String]){
 
-        val uri = "local:/tmp/orientdb"
-//        val uri = "memory:OrientdbObjectExample"
-//        val orient = Orient.instance()
+        val uri = "memory:OrientdbObjectExample"
+        //        val uri = "memory:OrientdbObjectExample"
+        //        val orient = Orient.instance()
         val dbx = new OObjectDatabaseTx(uri)
 
-        val db:OObjectDatabaseTx =
+        implicit val db:OObjectDatabaseTx =
             if (dbx.exists())
                 dbx.open("admin", "admin")
             else{
                 dbx.create()
             }
 
-//        db.getMetadata.getSchema.createClass(classOf[User])
+        //        db.getMetadata.getSchema.createClass(classOf[User])
+//        db.getEntityManager.registerEntityClass(classOf[ODocument])
+        db.getEntityManager.registerEntityClass(classOf[DigakuModel])
         db.getEntityManager.registerEntityClass(classOf[User])
-//        db.getMetadata.reload()
+        db.getEntityManager.registerEntityClasses("com.orientechnologies.orient.core.metadata.schema")
 
-        val gondez = new User()
-        gondez.name = "gondez"
+        //        db.getMetadata.reload()
 
-        val robin = new User()
-        robin.name = "robin"
-        robin.supports.add(gondez)
+        val gondez = new User("gondez")
+        val robin = new User("robin")
+        val temon = new User("temon")
 
-        db.detach(robin)
+        robin.supporting += gondez
+        robin.supporting += temon
+        temon.supporting += gondez
+
         db.save(robin)
 
         println("count class elements: " + db.countClusterElements("User"))
@@ -69,7 +54,7 @@ object OrientdbObjectExample {
 
         timing("get from sql like query"){
             for ( u <- result ){
-    //            db.detach(u)
+                //            db.detach(u)
                 println(" + " + u)
             }
         }
@@ -87,13 +72,21 @@ object OrientdbObjectExample {
 
         }
 
-//        println("search for gondez and support: ")
+        //        println("search for gondez and support: ")
 
         timing("Search for gondez and support"){
-            result=db.queryBySql[User]("select * from User where supports contains (name='gondez')")
+            result=db.queryBySql[User]("select * from User where supporting contains (name='gondez')")
 
             for (u <- result){
                 println(" + " + u)
+            }
+        }
+
+        timing("Who is user supported by robin?"){
+            val result = db.queryBySql[User]("select * from User where name='robin'")
+            for(u <- result) {
+                println(" + %s supporting %d users".format(u.name, u.supporting.size()))
+                u.supporting.foreach(u => println("    * " + u.toString))
             }
         }
 

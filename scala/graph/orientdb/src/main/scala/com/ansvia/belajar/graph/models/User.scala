@@ -11,13 +11,14 @@ import annotation.target.field
  * Time: 10:57 PM
  *
  */
-class User {
-  @Id @field var id:String = _
-  var name:String = _
-  @Version var version:String = _
 
-    var supports:java.util.List[User] = new java.util.ArrayList[User]()
+trait DigakuModel
 
+case class User(var name:String="") extends DigakuModel {
+    @Id var id:String = _
+    @Version var version:String = _
 
-  override def toString = "User(%s,%s)".format(id, name)
+    var supporting:java.util.List[User] = new java.util.ArrayList[User]()
+
+    override def toString = "User(%s,%s)".format(id, name)
 }
