@@ -7,6 +7,8 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.orientechnologies.orient.core.db.`object`.ODatabaseObject
 import com.orientechnologies.orient.`object`.db.OObjectDatabaseTx
+import com.orientechnologies.orient.core.record.impl.ODocument
+import com.orientechnologies.orient.core.db.graph.OGraphDatabase
 
 object OrientdbObjectExample {
 
@@ -50,6 +52,7 @@ object OrientdbObjectExample {
 
 //        db.getMetadata.getSchema.createClass(classOf[User])
         db.getEntityManager.registerEntityClass(classOf[User])
+        db.getEntityManager.registerEntityClass(classOf[ODocument])
 //        db.getMetadata.reload()
 
         val gondez = new User()
@@ -59,7 +62,6 @@ object OrientdbObjectExample {
         robin.name = "robin"
         robin.supports.add(gondez)
 
-        db.detach(robin)
         db.save(robin)
 
         println("count class elements: " + db.countClusterElements("User"))
@@ -94,6 +96,30 @@ object OrientdbObjectExample {
 
             for (u <- result){
                 println(" + " + u)
+            }
+        }
+
+        timing("Search using traverse"){
+            result = db.queryBySql[User]("traverse supports from #9:1")
+
+            for (u <- result){
+                println(" + " + u)
+            }
+        }
+
+        timing("get traverse path"){
+            val rv = db.queryBySql[User]("traverse in,out from User while $depth <= 5")
+            for( z <- rv ){
+                println(" + " + z)
+            }
+        }
+
+        timing("test from remote"){
+            val db2 = new OGraphDatabase("remote:localhost/temp")
+            db2.open("admin", "admin")
+            val rv = db2.browseVertices()
+            for (u <- rv){
+                println(" + " + u.field("name"))
             }
         }
 
