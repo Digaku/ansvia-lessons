@@ -20,5 +20,9 @@ case class User(var name:String="") extends DigakuModel {
 
     var supporting:java.util.List[User] = new java.util.ArrayList[User]()
 
+    def this(){
+        this("")
+    }
+
     override def toString = "User(%s,%s)".format(id, name)
 }
