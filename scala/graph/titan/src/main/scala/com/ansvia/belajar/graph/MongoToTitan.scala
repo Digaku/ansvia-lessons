@@ -9,7 +9,7 @@ import java.lang.Iterable
 import java.util
 
 
-object TitanExample extends PerfTiming {
+object MongoToTitan extends PerfTiming {
 
     def main(args:Array[String]){
 
