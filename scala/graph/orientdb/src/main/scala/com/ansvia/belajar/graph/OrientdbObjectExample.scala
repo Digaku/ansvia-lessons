@@ -8,10 +8,11 @@ import scala.collection.JavaConversions._
 import com.orientechnologies.orient.core.db.`object`.ODatabaseObject
 import com.orientechnologies.orient.`object`.db.OObjectDatabaseTx
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase
+import com.ansvia.perf.PerfTiming
 
-object OrientdbObjectExample {
+object OrientdbObjectExample extends PerfTiming {
 
-    import com.ansvia.perf.Perf.timing
+//    import com.ansvia.perf.Perf.timing
     import Implicits._
 
 

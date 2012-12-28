@@ -12,6 +12,7 @@ resolvers ++= Seq(
     )
     
 libraryDependencies ++= Seq(
+    "com.ansvia" % "ansvia-perf" % "0.0.2",
     "com.orientechnologies" % "orientdb-client" % "1.3.0",
     "com.orientechnologies" % "orientdb-object" % "1.3.0",
     "org.eclipse.persistence" % "javax.persistence" % "2.0.0"
