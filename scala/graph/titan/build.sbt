@@ -15,5 +15,6 @@ resolvers ++= Seq(
     
 libraryDependencies ++= Seq(
     "com.thinkaurelius.titan" % "titan" % "0.2.0",
-    "com.google.guava" % "guava" % "11.0.2" % "compile"
+    "com.google.guava" % "guava" % "11.0.2" % "compile",
+    "com.ansvia" % "ansvia-perf" % "0.0.2"
     )

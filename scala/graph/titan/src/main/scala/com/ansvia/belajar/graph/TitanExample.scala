@@ -2,11 +2,14 @@
 package com.ansvia.belajar.graph
 
 import com.thinkaurelius.titan.core.TitanFactory
-import com.tinkerpop.blueprints.Direction
+import com.tinkerpop.blueprints.{Vertex, Direction}
 import org.apache.commons.configuration.BaseConfiguration
+import com.ansvia.perf.PerfTiming
+import java.lang.Iterable
+import java.util
 
 
-object TitanExample {
+object TitanExample extends PerfTiming {
 
     def main(args:Array[String]){
 
@@ -16,7 +19,7 @@ object TitanExample {
         // using cassandra
         val conf = new BaseConfiguration()
         conf.setProperty("storage.backend", "cassandra")
-        conf.setProperty("storage.hostname", "127.0.0.1")
+        conf.setProperty("storage.hostname", "localhost")
         val g = TitanFactory.open(conf)
 
         val robin = g.addVertex(null)
@@ -36,35 +39,38 @@ object TitanExample {
         val supportE2 = g.addEdge(null, robin, temon, "support")
         g.addEdge(null, adit, andrie, "support")
 
-        var result = robin.query().labels("support").vertices()
+        var result: Iterable[Vertex] = null
+        var it: util.Iterator[Vertex] = null
 
-        println("Who is supported by robin")
-
-        var it = result.iterator()
-        while(it.hasNext){
-            val v = it.next()
-            println(" + " + v.getProperty("name"))
+        timing("Who is supported by robin"){
+            result = robin.query().labels("support").vertices()
+            it = result.iterator()
+            while(it.hasNext){
+                val v = it.next()
+                println(" + " + v.getProperty("name"))
+            }
         }
 
-        println("Who is supported by robin with cool")
 
-        supportE.setProperty("cool", true)
+        timing("Who is supported by robin with cool"){
+            supportE.setProperty("cool", true)
 
-        result = robin.query().labels("support").has("cool", true).vertices()
-        it = result.iterator()
-        while (it.hasNext){
-            val v = it.next()
-            println(" + " + v.getProperty("name"))
+            result = robin.query().labels("support").has("cool", true).vertices()
+            it = result.iterator()
+            while (it.hasNext){
+                val v = it.next()
+                println(" + " + v.getProperty("name"))
+            }
         }
 
-        println("who is supporting andrie")
 
-        it = andrie.getVertices(Direction.IN, "support").iterator()
-        while(it.hasNext){
-            val v = it.next()
-            println(" + " + v.getProperty("name"))
+        timing("who is supporting andrie"){
+            it = andrie.getVertices(Direction.IN, "support").iterator()
+            while(it.hasNext){
+                val v = it.next()
+                println(" + " + v.getProperty("name"))
+            }
         }
-
 
     }
 }
