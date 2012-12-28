@@ -7,37 +7,36 @@ import org.apache.commons.configuration.BaseConfiguration
 import com.ansvia.perf.PerfTiming
 import java.lang.Iterable
 import java.util
+import com.tinkerpop.rexster.client.RexsterClient
+import com.thinkaurelius.titan.tinkerpop.rexster.RexsterTitanClient
 
 
-object TitanExample extends PerfTiming {
+object RexsterExample extends PerfTiming {
 
-    def main(args:Array[String]){
+    // using cassandra
+    val conf = new BaseConfiguration()
+    conf.setProperty("storage.backend", "cassandra")
+    conf.setProperty("storage.hostname", "localhost")
+    val g = TitanFactory.open(conf)
 
-        // local
-//        val g = TitanFactory.open("/tmp/titandb")
+    val robin = g.addVertex(null)
+    robin.setProperty("name", "robin")
 
-        // using cassandra
-        val conf = new BaseConfiguration()
-        conf.setProperty("storage.backend", "cassandra")
-        conf.setProperty("storage.hostname", "localhost")
-        val g = TitanFactory.open(conf)
+    val andrie = g.addVertex(null)
+    andrie.setProperty("name", "andrie")
 
-        val robin = g.addVertex(null)
-        robin.setProperty("name", "robin")
+    val temon = g.addVertex(null)
+    temon.setProperty("name", "temon")
 
-        val andrie = g.addVertex(null)
-        andrie.setProperty("name", "andrie")
-
-        val temon = g.addVertex(null)
-        temon.setProperty("name", "temon")
-
-        val adit = g.addVertex(null)
-        adit.setProperty("name", "Adit")
+    val adit = g.addVertex(null)
+    adit.setProperty("name", "Adit")
 
 
-        val supportE = g.addEdge(null, robin, andrie, "support")
-        val supportE2 = g.addEdge(null, robin, temon, "support")
-        val supportE3 = g.addEdge(null, adit, andrie, "support")
+    val supportE = g.addEdge(null, robin, andrie, "support")
+    val supportE2 = g.addEdge(null, robin, temon, "support")
+    val supportE3 = g.addEdge(null, adit, andrie, "support")
+
+    def fillData(){
 
         var result: Iterable[Vertex] = null
         var it: util.Iterator[Vertex] = null
@@ -71,16 +70,30 @@ object TitanExample extends PerfTiming {
                 println(" + " + v.getProperty("name"))
             }
         }
+    }
+
+    def main(args:Array[String]){
+
+
+        val client = new RexsterTitanClient("localhost", 8184)
+
+        timing("get from rexster pro"){
+            val result = client.query("""g.V[0].map""")
+            println(result.toString)
+        }
+
+
+        client.close()
+
 
         g.removeVertex(andrie)
         g.removeVertex(temon)
         g.removeVertex(adit)
         g.removeVertex(robin)
 
-//        g.removeEdge(supportE)
-//        g.removeEdge(supportE2)
-//        g.removeEdge(supportE3)
-
+        g.removeEdge(supportE)
+        g.removeEdge(supportE2)
+        g.removeEdge(supportE3)
 
     }
 }
