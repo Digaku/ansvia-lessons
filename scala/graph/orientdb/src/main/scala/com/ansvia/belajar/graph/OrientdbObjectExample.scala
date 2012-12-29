@@ -1,14 +1,13 @@
 package com.ansvia.belajar.graph
 
-import com.orientechnologies.orient.core.id.ORecordId
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
-import models.{User, DigakuModel}
-import scala.collection.JavaConverters._
+import models.User
 import scala.collection.JavaConversions._
-import com.orientechnologies.orient.core.db.`object`.ODatabaseObject
 import com.orientechnologies.orient.`object`.db.OObjectDatabaseTx
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase
 import com.ansvia.perf.PerfTiming
+import com.orientechnologies.orient.core.exception.OSchemaException
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 object OrientdbObjectExample extends PerfTiming {
 
@@ -18,17 +17,21 @@ object OrientdbObjectExample extends PerfTiming {
 
     def main(args:Array[String]){
 
-        val uri = "memory:OrientdbObjectExample"
+//        val uri = "memory:OrientdbObjectExample"
+        val uri = "remote:localhost/temp"
         //        val uri = "memory:OrientdbObjectExample"
         //        val orient = Orient.instance()
         val dbx = new OObjectDatabaseTx(uri)
+        implicit val db:OObjectDatabaseTx = dbx.open("admin", "admin")
 
-        implicit val db:OObjectDatabaseTx =
-            if (dbx.exists())
-                dbx.open("admin", "admin")
-            else{
-                dbx.create()
-            }
+        // di remote mode tidak bisa create database
+        // harus melalu config file.
+//        implicit val db:OObjectDatabaseTx =
+//            if (dbx.exists())
+//                dbx.open("admin", "admin")
+//            else{
+//                dbx.create()
+//            }
 
         //        db.getMetadata.getSchema.createClass(classOf[User])
 //        db.getEntityManager.registerEntityClass(classOf[ODocument])
@@ -38,23 +41,26 @@ object OrientdbObjectExample extends PerfTiming {
         //        db.getMetadata.reload()
 
         val gondez = new User("gondez")
-        val robin = new User("robin")
+        var robin = new User("robin")
         val temon = new User("temon")
+        val adit = new User("adit")
 
         robin.supporting += gondez
         robin.supporting += temon
         temon.supporting += gondez
+        gondez.supporting += adit
 
         db.save(robin)
 
         println("count class elements: " + db.countClusterElements("User"))
 
-
-        var result: List[User] = db.queryBySql[User]("select * from User")
+        var result: List[User] = null
 
         timing("get from sql like query"){
+            result = db.queryBySql[User]("select * from User")
             for ( u <- result ){
-                //            db.detach(u)
+                if (u.name == "robin")
+                    robin = u
                 println(" + " + u)
             }
         }
@@ -84,10 +90,13 @@ object OrientdbObjectExample extends PerfTiming {
 
 
         timing("Search using traverse"){
-            result = db.queryBySql[User]("traverse supports from #9:1")
+            result = db.queryBySql("select * from User where name='%s'".format(gondez.name))
+            if(result.length > 0){
+                result = db.queryBySql[User]("traverse supporting from #" + result.head.id)
 
-            for (u <- result){
-                println(" + " + u)
+                for (u <- result){
+                    println(" + " + u)
+                }
             }
         }
 
@@ -101,10 +110,33 @@ object OrientdbObjectExample extends PerfTiming {
         timing("test from remote"){
             val db2 = new OGraphDatabase("remote:localhost/temp")
             db2.open("admin", "admin")
+
+            try {
+                db2.createVertexType("TestUser")
+            }catch{
+                case e:OSchemaException =>
+                    println("not creating vertex schema: " + e.getMessage)
+            }
+
+            val result = db2.queryBySql[ODocument]("select * from TestUser where name='robin_remote'")
+
+            for (u <- result){
+                println(" + " + u)
+            }
+
+
+            val v1 = db2.createVertex("TestUser")
+            v1.field("name", "robin_remote")
+            db2.save(v1)
+
             val rv = db2.browseVertices()
+
             for (u <- rv){
                 println(" + " + u.field("name"))
             }
+
+            v1.delete()
+            db2.close()
         }
 
 
@@ -112,12 +144,29 @@ object OrientdbObjectExample extends PerfTiming {
             val result = db.queryBySql[User]("select * from User where name='robin'")
             for(u <- result) {
                 println(" + %s supporting %d users".format(u.name, u.supporting.size()))
-                u.supporting.foreach(u => println("    * " + u.toString))
+                u.supporting.foreach(u => println(" * " + u.toString))
             }
         }
 
+        timing("get supporting of supporting to adit"){
+            val result = db.queryBySql[User]("select * from User where supporting.supporting contains (name='adit')")
+            result.foreach(u => println(" + " + u))
+        }
 
-        db.drop()
+        timing("who is adit's supporters?"){
+            val result = db.queryBySql[User]("select * from User where supporting contains (name='adit')")
+            result.foreach(u => println(" + " + u))
+        }
+
+
+        // di remote mode database dihandle oleh config
+        // jadi gak bisa drop database via client.
+//        db.drop()
+        // remote mode bisa hapus cluster atau schema class.
+//        db.getMetadata.getSchema.dropClass("User")
+
+
+
         db.close()
 
         //      val oclass = db.getMetadata.getSchema.createClass(classOf[User])

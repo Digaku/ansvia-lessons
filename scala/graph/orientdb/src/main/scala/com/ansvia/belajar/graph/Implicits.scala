@@ -5,6 +5,9 @@ import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 import models.DigakuModel
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
+import com.orientechnologies.orient.core.db.graph.OGraphDatabase
+import com.orientechnologies.orient.core.query.OQuery
+import com.orientechnologies.orient.core.sql.query
 
 /**
  * Copyright (C) 2011-2012 Ansvia Inc.
@@ -31,6 +34,17 @@ object Implicits {
             }
         }
     }
+
+    implicit def dbWrapperGraph(db:OGraphDatabase) = new {
+        def queryBySql[T <: AnyRef](sql:String):List[T] = {
+            val results: java.util.List[T] = db.query(new OSQLSynchQuery[T](sql))
+            for ( rv <- results.asScala.toList )
+                yield {
+                    rv
+                }
+        }
+    }
+
 
     /**
      * wrap iterable java List to override it IterableLike.foreach to our own

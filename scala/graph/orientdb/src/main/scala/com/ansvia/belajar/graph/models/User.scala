@@ -12,11 +12,15 @@ import annotation.target.field
  *
  */
 
-trait DigakuModel
-
-case class User(var name:String="") extends DigakuModel {
+trait DigakuModel {
     @Id var id:String = _
     @Version var version:String = _
+
+    override def toString = "%s(%s,%s)".format(getClass.getSimpleName, id, version)
+}
+
+case class User(var name:String="") extends DigakuModel {
+
 
     var supporting:java.util.List[User] = new java.util.ArrayList[User]()
 
