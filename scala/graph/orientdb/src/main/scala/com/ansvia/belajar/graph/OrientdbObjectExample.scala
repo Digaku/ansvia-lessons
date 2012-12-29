@@ -4,6 +4,8 @@ import models.User
 import scala.collection.JavaConversions._
 import com.orientechnologies.orient.`object`.db.OObjectDatabaseTx
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase
+import com.orientechnologies.orient.core.metadata.schema.{OType, OClass}
+;
 import com.ansvia.perf.PerfTiming
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
@@ -38,19 +40,23 @@ object OrientdbObjectExample extends PerfTiming {
         db.getEntityManager.registerEntityClass(classOf[User])
         db.getEntityManager.registerEntityClasses("com.orientechnologies.orient.core.metadata.schema")
 
-        //        db.getMetadata.reload()
+        val uclass = db.getMetadata.getSchema.getClass("User")
+        uclass.createProperty("name", OType.STRING)
+        uclass.createIndex("nameIndex", OClass.INDEX_TYPE.UNIQUE, "name")
 
         val gondez = new User("gondez")
-        var robin = new User("robin")
+        val robin = new User("robin")
         val temon = new User("temon")
         val adit = new User("adit")
 
-        robin.supporting += gondez
-        robin.supporting += temon
-        temon.supporting += gondez
-        gondez.supporting += adit
+//        robin.supporting += gondez
+//        robin.supporting += temon
+//        temon.supporting += gondez
 
+        db.save(gondez)
+        db.save(temon)
         db.save(robin)
+        db.save(adit)
 
         println("count class elements: " + db.countClusterElements("User"))
 
@@ -59,8 +65,15 @@ object OrientdbObjectExample extends PerfTiming {
         timing("get from sql like query"){
             result = db.queryBySql[User]("select * from User")
             for ( u <- result ){
+                if (u.name == "gondez"){
+                    u.supporting += adit
+                    u.save()
+                }
                 if (u.name == "robin")
-                    robin = u
+                {
+                    u.supporting += gondez
+                    u.save()
+                }
                 println(" + " + u)
             }
         }
@@ -163,10 +176,7 @@ object OrientdbObjectExample extends PerfTiming {
         // jadi gak bisa drop database via client.
 //        db.drop()
         // remote mode bisa hapus cluster atau schema class.
-//        db.getMetadata.getSchema.dropClass("User")
-
-
-
+        db.getMetadata.getSchema.dropClass("User")
         db.close()
 
         //      val oclass = db.getMetadata.getSchema.createClass(classOf[User])
