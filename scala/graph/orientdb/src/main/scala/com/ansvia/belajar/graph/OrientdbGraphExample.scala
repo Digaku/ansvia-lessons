@@ -6,10 +6,11 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.ansvia.perf.PerfTiming
 import com.tinkerpop.gremlin.java.GremlinPipeline
-import com.tinkerpop.blueprints.{Direction, Graph, Vertex}
+import com.tinkerpop.blueprints.{Edge, Direction, Graph, Vertex}
 import com.tinkerpop.blueprints.impls.orient.{OrientEdge, OrientGraph}
 import com.tinkerpop.pipes.PipeFunction
 import com.tinkerpop.pipes.branch.LoopPipe.LoopBundle
+import java.util
 
 //import com.orientechnologies.orient.core.db.graph.OGraphDatabase
 //import com.orientechnologies.orient.core.record.impl.ODocument
@@ -19,23 +20,45 @@ object OrientdbGraphExample extends PerfTiming {
 
 //    import Implicits._
 
-    class VertexWrapper(vertex:Vertex, label:String, db:Graph){
-        def --(label:String):VertexWrapper = {
+    case class VertexWrapper(vertex:Vertex, var label:String, db:Graph){
+        def -->(label:String):VertexWrapper = {
             new VertexWrapper(vertex, label, db)
         }
-        def -->(outV:Vertex){
+        def <--(outV:Vertex):Edge = {
+            assert(label != null, "no label?")
+            db.addEdge(null, outV, vertex, label)
+        }
+        def -->(outV:Vertex):Edge = {
             assert(label != null, "no label?")
             db.addEdge(null, vertex, outV, label)
+        }
+        def <--(label:String):VertexWrapper = {
+            this.label = label
+            this
         }
         def pipe = {
             val pipe = new GremlinPipeline[Vertex, AnyRef]()
             pipe.start(vertex)
         }
     }
-    implicit def vertexWrapper(vertex:Vertex)(implicit db:OrientGraph) = {
-        new VertexWrapper(vertex, null, db)
+    case class EdgeWrapperRight(v1:Vertex, edge:Edge, label:String, db:Graph){
+        def -->(v2:Vertex) = {
+            db.addEdge(null, v1, v2, label)
+        }
     }
-    implicit def orientEdgeFormatter(edge:OrientEdge) = new {
+    case class EdgeWrapperLeft(edge:Edge, db:Graph){
+        def -->(label:String):EdgeWrapperRight = {
+            val v = edge.getVertex(Direction.IN)
+            EdgeWrapperRight(v, edge, label, db)
+        }
+        def <--(label:String):VertexWrapper = {
+            val v = edge.getVertex(Direction.OUT)
+            VertexWrapper(v, label, db)
+        }
+    }
+    implicit def vertexWrapper(vertex:Vertex)(implicit db:Graph) = VertexWrapper(vertex, null, db)
+    implicit def edgeWrapper(edge:Edge)(implicit db:Graph) = EdgeWrapperLeft(edge, db)
+    implicit def edgeFormatter(edge:Edge) = new {
         def prettyPrint(key:String) = {
             val in = edge.getVertex(Direction.IN)
             val label = edge.getLabel
@@ -43,6 +66,7 @@ object OrientdbGraphExample extends PerfTiming {
             "%s --%s--> %s".format(out.getProperty(key), label, in.getProperty(key))
         }
     }
+
 
     val userData = Map(
     "gondez" -> "Solo",
@@ -69,12 +93,14 @@ object OrientdbGraphExample extends PerfTiming {
         val andrie = userMap("andrie")
         val rizky = userMap("rizky")
         val temon = userMap("temon")
+        val robin = userMap("robin")
 
-        gondez --"support"--> userMap("temon")
-        userMap("temon") --"support"--> userMap("robin")
-        temon --"knows"--> andrie
-        temon --"hate"--> rizky
-        temon --"support"--> gondez
+        gondez --> "support" --> userMap("temon")
+        userMap("temon") --> "support" --> userMap("robin")
+        temon --> "knows" --> andrie
+        temon --> "loves" --> rizky --> "knows" --> temon
+        temon --> "support" --> gondez --> "knows" --> robin --> "knows" --> gondez
+        andrie --> "knows" --> robin
 
         timing("who is supported by gondez (get from gremlin pipe)"){
             val pipe = new GremlinPipeline[Vertex, AnyRef]()
@@ -123,6 +149,26 @@ object OrientdbGraphExample extends PerfTiming {
                     case _ =>
                 }
             }
+        }
+
+        timing("who is known by gondez?"){
+            gondez.pipe.out("knows").toList.foreach( u => println(" + " + u.getProperty("name")) )
+        }
+
+        timing("robin's mutual knows"){
+            robin.pipe.both("knows").toList.foreach( u => println(" + " + u.getProperty("name")) )
+        }
+
+        timing("who is knows robin?"){
+            robin.pipe.in("knows").toList.foreach( u => println(" + " + u.getProperty("name")) )
+        }
+
+        timing("who is knows temon?"){
+            temon.pipe.in("knows").toList.foreach( u => println(" + " + u.getProperty("name")) )
+        }
+
+        timing("all temon's out with skip"){
+            temon.pipe.out().range(1, 2).toList.foreach( u => println(" + " + u.getProperty("name")) )
         }
 
 
