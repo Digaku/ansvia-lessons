@@ -2,7 +2,6 @@ package com.ansvia.belajar.graph.models
 
 import javax.persistence.{Version, Id, UniqueConstraint}
 import annotation.target.field
-import com.orientechnologies.orient.core.record.impl.ODocument
 
 
 /**
@@ -20,7 +19,7 @@ trait DigakuModel {
     override def toString = "%s(%s,%s)".format(getClass.getSimpleName, id, version)
 }
 
-case class User(var name:String="") extends ODocument with DigakuModel {
+case class User(var name:String="") extends DigakuModel {
 
     var supporting:java.util.List[User] = new java.util.ArrayList[User]()
 
