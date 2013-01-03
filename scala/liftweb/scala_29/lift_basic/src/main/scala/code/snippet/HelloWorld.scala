@@ -14,7 +14,10 @@ class HelloWorld {
     // replace the contents of the element with id "time" with the date
     def howdy = "#time *" #> date.map(_.toString)
 
-    def test = "*" #> <strong>oi oi mannn!</strong>
+    def test = "*" #>
+        <strong>oi oi mannn!</strong><br /><span>Yihaaaa!</span>
+        <br />
+        <span>Yihaa lagi :D</span>
 
     /*
      lazy val date: Date = DependencyFactory.time.vend // create the date via factory
@@ -22,4 +25,3 @@ class HelloWorld {
      def howdy = "#time *" #> date.toString
      */
 }
-
