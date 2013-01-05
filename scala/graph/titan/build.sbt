@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
     "com.thinkaurelius.titan" % "titan" % "0.2.0",
     "com.google.guava" % "guava" % "11.0.2" % "compile",
     "com.ansvia" % "ansvia-perf" % "0.0.2",
-    "com.ansvia.graph" % "blueprints-scala" % "0.0.1",
-    "org.mongodb" %% "casbah" % "2.4.1"
+    "com.ansvia" % "ansvia-commons" % "0.0.2",
+    "org.mongodb" % "casbah_2.9.1" % "2.4.1",
+    "com.ansvia.graph" % "blueprints-scala" % "0.0.1"
     )
