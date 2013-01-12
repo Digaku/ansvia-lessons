@@ -67,5 +67,13 @@ object OptionExample {
         show(Some("andrie"))
         show(Some("nadir"), Some(21))
 
+        if (samsung.isDefined){
+            // do with samsung
+        }
+
+        if (samsung.isEmpty){
+            // do with samsung
+        }
+
     }
 }
