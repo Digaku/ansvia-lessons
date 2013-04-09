@@ -24,16 +24,35 @@ object Faunus extends PerfTiming {
     def main(args:Array[String]){
 
 
+        //g.E.transform('{"{\\"_inV\\":\\"" + it.inV.toList()[0].id + "\\", \\"label\\":\\"" + it.label + "\\", \\"_outV\\":\\"" + it.outV.toList()[0].id + "\\",\\"attr\\":\\"" + it.map() + "\\"}"}')
 
         val config = new Configuration()
+//        faunus.graph.input.format=com.thinkaurelius.faunus.formats.titan.cassandra.TitanCassandraInputFormat
+//        faunus.graph.input.titan.storage.backend=cassandra
+//        faunus.graph.input.titan.storage.hostname=localhost
+//        faunus.graph.input.titan.storage.port=9160
+//        faunus.graph.input.titan.storage.keyspace=titan
+//        cassandra.input.partitioner.class=org.apache.cassandra.dht.RandomPartitioner
+//        # cassandra.input.split.size=512
+//
+//        # output data (graph or statistic) parameters
+//                faunus.graph.output.format=com.thinkaurelius.faunus.formats.graphson.GraphSONOutputFormat
+//        faunus.sideeffect.output.format=org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
+//        faunus.output.location=output
+//        faunus.output.location.overwrite=true
+
+
         config.set("faunus.graph.input.format", "com.thinkaurelius.faunus.formats.titan.cassandra.TitanCassandraInputFormat")
         config.set("faunus.graph.input.titan.storage.backend", "cassandra")
         config.set("faunus.graph.input.titan.storage.hostname", "localhost")
         config.set("faunus.graph.input.titan.storage.port", "9160")
         config.set("faunus.graph.input.titan.storage.keyspace", "titan")
-        config.set("faunus.graph.output.format", "com.thinkaurelius.faunus.formats.noop.NoOpOutputFormat")
         config.set("cassandra.input.partitioner.class", "org.apache.cassandra.dht.RandomPartitioner")
+        config.set("faunus.graph.output.format", "com.thinkaurelius.faunus.formats.graphson.GraphSONOutputFormat")
+        config.set("faunus.sideeffect.output.format", "org.apache.hadoop.mapreduce.lib.output.TextOutputFormat")
         config.set("faunus.output.location", "/tmp/faunus-output")
+        config.set("faunus.output.location.overwrite", "true")
+
 //        config.setProperty("faunus.graph.input.titan.storage.backend", "cassandra")
 //        config.setProperty("faunus.graph.input.titan.storage.hostname", "localhost")
 //        config.setProperty("faunus.graph.input.titan.storage.port", "9160")
@@ -47,7 +66,7 @@ object Faunus extends PerfTiming {
 //        val faun = new FaunusTitanCassandraGraph(config)
         val faunPipe = new FaunusPipeline(faun)
 
-        faunPipe.E().count().submit()
+        faunPipe.V().count().submit()
 //        faun.getEdges.foreach(println)
 
 //
