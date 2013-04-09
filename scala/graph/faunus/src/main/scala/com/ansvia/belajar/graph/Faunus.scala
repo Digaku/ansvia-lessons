@@ -7,6 +7,7 @@ import com.thinkaurelius.faunus.{FaunusGraph, FaunusPipeline}
 import com.thinkaurelius.faunus.formats.titan.cassandra.FaunusTitanCassandraGraph
 import scala.collection.JavaConversions._
 import org.apache.hadoop.conf.Configuration
+import java.io.{BufferedReader, FileReader, File}
 
 
 object Faunus extends PerfTiming {
@@ -66,7 +67,27 @@ object Faunus extends PerfTiming {
 //        val faun = new FaunusTitanCassandraGraph(config)
         val faunPipe = new FaunusPipeline(faun)
 
-        faunPipe.V().count().submit()
+        faunPipe.E().transform("""{it}""").submit()
+
+        val _r = new File("/tmp/faunus-output/job-0/sideeffect-r-00000")
+        val _m = new File("/tmp/faunus-output/job-0/sideeffect-m-00000")
+        val sideF = if (_r.exists)
+            _r
+        else if(_m.exists())
+            _m
+        else
+            _m
+
+        val bfr = new BufferedReader(new FileReader(sideF))
+        var done = false
+        while(!done){
+            val rv = bfr.readLine()
+            if (rv!=null)
+                println("==> " + bfr.readLine())
+            else
+                done = true
+        }
+
 //        faun.getEdges.foreach(println)
 
 //
