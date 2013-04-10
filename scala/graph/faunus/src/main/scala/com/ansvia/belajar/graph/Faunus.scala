@@ -8,6 +8,7 @@ import com.thinkaurelius.faunus.formats.titan.cassandra.FaunusTitanCassandraGrap
 import scala.collection.JavaConversions._
 import org.apache.hadoop.conf.Configuration
 import java.io.{BufferedReader, FileReader, File}
+import com.thinkaurelius.faunus.formats.graphson.GraphSONOutputFormat
 
 
 object Faunus extends PerfTiming {
@@ -67,10 +68,56 @@ object Faunus extends PerfTiming {
 //        val faun = new FaunusTitanCassandraGraph(config)
         val faunPipe = new FaunusPipeline(faun)
 
-        faunPipe.E().transform("""{it}""").submit()
+//        case "response_of":
+//                attrs.push('"count":' + it.inV.inE("response_of").count())
+//        break
+//        case "view":
+//                attrs.push('"count":' + it.inV.inE("view").count())
+//        break
+//        case "likes":
+//                attrs.push('"count":' + it.inV.inE("likes").count())
+//        break
+//        case "wrote":
+//                attrs.push('"time":' + "0")
+//        break
+//        case "origin":
+//                attrs.push('"time":' + "0")
+//        break
+
+        faunPipe.E().transform(
+            """{ it ->
+              |  attrs = []
+              |  it.map().each{ k, v ->
+              |     def vStr = '"' + v + '"'
+              |     switch (k){
+              |         case "invitedByUserId":
+              |             vStr = v
+              |     }
+              |     attrs.push('"' + k + '":' + vStr)
+              |  }
+              |  switch (it.label){
+              |     case "support":
+              |         attrs.push('"sourceId":' + it.outV.toList()[0].id)
+              |         attrs.push('"targetId":' + it.inV.toList()[0].id)
+              |         break
+              |     case "join":
+              |         attrs.push('"sourceId":' + it.outV.toList()[0].id)
+              |         attrs.push('"targetId":' + it.inV.toList()[0].id)
+              |         break
+              |  }
+              |  attrsStr = attrs.join(",")
+              |  if (attrsStr != ""){
+              |     attrsStr = "," + attrsStr
+              |  }
+              |  '{"_outV":' + it.outV.toList()[0].id + ',' +
+              |    '"label":"' + it.label + '",' +
+              |    '"_inV":' + it.inV.toList()[0].id +
+              |    attrsStr + '}'
+              |}""".stripMargin).submit()
 
         val _r = new File("/tmp/faunus-output/job-0/sideeffect-r-00000")
         val _m = new File("/tmp/faunus-output/job-0/sideeffect-m-00000")
+
         val sideF = if (_r.exists)
             _r
         else if(_m.exists())
@@ -87,6 +134,7 @@ object Faunus extends PerfTiming {
             else
                 done = true
         }
+        bfr.close()
 
 //        faun.getEdges.foreach(println)
 
