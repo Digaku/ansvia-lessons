@@ -1,0 +1,2 @@
+VERSION=0.1
+: main.less |> lessc %f %o -compress |> main.min-$(VERSION).css
