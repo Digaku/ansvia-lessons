@@ -18,7 +18,8 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "storm" % "storm" % "0.8.2" % "provided",
+//  "storm" % "storm" % "0.8.2" % "provided",
+  "com.github.velvia" % "scala-storm_2.9.1" % "0.2.2",
   "org.clojure" % "clojure" % "1.4.0" % "provided",
   "org.twitter4j" % "twitter4j-core" % "2.2.6-SNAPSHOT",
   "org.twitter4j" % "twitter4j-stream" % "2.2.6-SNAPSHOT",
