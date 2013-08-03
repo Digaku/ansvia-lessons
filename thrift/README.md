@@ -41,7 +41,7 @@ server
 ```
 [info] Running example.Trancam 
 Listening at 7366...
-ping received. ts: 2194
+ping received. ping: 2194
 ```
 
 [] Robin Sy.
