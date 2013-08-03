@@ -18,9 +18,10 @@ $ thrift --gen go --gen java trancam.thrift
 2. Buat kode client di Go, lihat `trancam.go`
 
 3. Buat kode server di Scala, lihat `src/example/Trancam.scala`.
-4. Kopi direktory `gen-java/gen` ke `src/main/java/`.
+4. Kopi direktori `gen-java/gen` ke `src/main/java/`.
 5. Jalankan server dengan cara `$ sbt run`.
 6. Jalankan client (di terminal lain) dengan cara
+
 ```bash
 $ go build
 $ ./trancam
@@ -28,12 +29,16 @@ $ ./trancam
 
 Contoh output kalo berhasil:
 
-``` # client
+client
+
+```
 $ time ./thrift
 rv:  250
 ```
 
-``` # server
+server
+
+```
 [info] Running example.Trancam 
 Listening at 7366...
 ping received. ts: 2194
