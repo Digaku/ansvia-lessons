@@ -32,7 +32,7 @@ Contoh output kalo berhasil:
 client
 
 ```
-$ time ./thrift
+$ ./thrift
 rv:  250
 ```
 
